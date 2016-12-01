@@ -100,7 +100,7 @@ FovisHandler::FovisHandler(lcm::LCM* lcm_recv,  lcm::LCM* lcm_pub,
     R_fovis(3) = bot_sq(R_fovis_chi);
     R_fovis(4) = bot_sq(R_fovis_chi);
     R_fovis(5) = bot_sq(R_fovis_chi);
-    z_indices.tail<3>() = eigen_utils::RigidBodyState::chiInds();;
+    z_indices.tail<3>() = eigen_utils::RigidBodyState::chiInds();
 
   }else{
     // ..incomplete
@@ -112,8 +112,10 @@ FovisHandler::FovisHandler(lcm::LCM* lcm_recv,  lcm::LCM* lcm_pub,
   prev_t0_body_internal_ = Eigen::Isometry3d::Identity();
   prev_t0_body_utime_ = 0;
 
-  publish_diagnostics_ = bot_param_get_boolean_or_fail(param, "state_estimator.fovis.publish_diagnostics");
+  downsample_factor_ = bot_param_get_int_or_fail(param, "state_estimator.fovis.downsample_factor");
+  counter = 0;
 
+  publish_diagnostics_ = bot_param_get_boolean_or_fail(param, "state_estimator.fovis.publish_diagnostics");
 }
 
 
@@ -156,6 +158,10 @@ bot_core::pose_t getBotTransAsBotPoseVelocity(BotTrans bt, int64_t utime ){
 
 
 RBISUpdateInterface * FovisHandler::processMessage(const pronto::update_t * msg, MavStateEstimator* state_estimator){
+  if (counter++ % downsample_factor_ != 0)
+  {
+    return NULL;
+  }
 
   if (msg->estimate_status == pronto::update_t::ESTIMATE_VALID){
   }else{

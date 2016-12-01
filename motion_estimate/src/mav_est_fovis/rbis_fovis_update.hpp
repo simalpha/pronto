@@ -43,6 +43,10 @@ public:
   
   void sendTransAsVelocityPose(BotTrans msgT, int64_t utime, int64_t prev_utime, std::string channel);
   
+  // Control publishing frequency
+  int downsample_factor_;
+  int counter;
+
   // Publish Debug Data to LCM
   bool publish_diagnostics_;  
 
